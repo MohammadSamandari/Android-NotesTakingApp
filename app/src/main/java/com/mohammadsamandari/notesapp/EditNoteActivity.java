@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -34,10 +36,15 @@ public class EditNoteActivity extends AppCompatActivity {
         //  Populating the edit text with the notes.
         txtNote.setText(note);
 
-        txtNote.setOnKeyListener(new View.OnKeyListener() {
+        txtNote.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                MainActivity.notesArrayList.set(position,txtNote.getText().toString());
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                MainActivity.notesArrayList.set(position, String.valueOf(s));
                 MainActivity.populateNotesArrayListLimited();
                 try {
                     SharedPreferences sharedPreferences=getSharedPreferences("com.mohammadsamandari.notesapp", Context.MODE_PRIVATE);
@@ -45,9 +52,13 @@ public class EditNoteActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
 
-                return false;
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
+
     }
 }

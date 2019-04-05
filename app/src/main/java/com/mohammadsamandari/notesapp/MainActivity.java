@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
     //  Showing Delete note dialog, and delete and save note.
     private void showDeleteAlertDialog(final int position) {
         new AlertDialog.Builder(MainActivity.this)
+                .setCancelable(false)
                 .setIcon(android.R.drawable.ic_delete)
                 .setTitle("Are you sure?")
                 .setMessage("Do you want to delete this note?")
