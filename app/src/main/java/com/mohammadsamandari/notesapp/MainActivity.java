@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Defining the Variables.
     ListView notesListView;
-    static ArrayList<String> notesArrayList;
+    static ArrayList<String> notesArrayList,notesArrayListLimited;
     static ArrayAdapter notesArrayAdapter;
     SharedPreferences sharedPreferences;
 
@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         //  Initializing the Variables:
         notesListView = findViewById(R.id.noteListView);
         notesArrayList = new ArrayList<>();
+        notesArrayListLimited=new ArrayList<>();    //Using this arraylist for showing only parts of main notesArrayList items.
         sharedPreferences = getSharedPreferences("com.mohammadsamandari.notesapp", Context.MODE_PRIVATE);
 
         //  Checking Apps first run or not
@@ -43,23 +44,21 @@ public class MainActivity extends AppCompatActivity {
             Log.i("Lord-SharedPreferences", "First Time Run");
             //  Adding the new note to the notesArrayList.
             notesArrayList.add("Sample Note");
-            saveNewNote();
         } else {
             Log.i("Lord-SharedPreferences", "Not First Time Run");
             //  Importing previous data into notesArrayList.
             try {
                 notesArrayList.clear();
                 notesArrayList = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("notes", ObjectSerializer.serialize(new ArrayList<String>())));
-                Log.i("Lord-Test", String.valueOf(notesArrayList.size()));
-                Log.i("Lord-SharedPreferences", "Not First Time - Try Part Happened");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        //  Updating the array adapter with new data.
-        notesArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, notesArrayList);
+        //  Updating the array adapter with data.
+        notesArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, notesArrayListLimited);
         notesListView.setAdapter(notesArrayAdapter);
+        populateNotesArrayListLimited();
 
         //  Listview on item click Listener:
         notesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -106,23 +105,15 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private void saveNewNote() {
-        //saving the whole notesArrayList int shared preferences.
-        try {
-            sharedPreferences.edit().putString("notes", ObjectSerializer.serialize(notesArrayList)).apply();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    //  Getting the note that we want to edit and open the edit note activity with that notes.
     private void openEditNoteActivity(String note,int position) {
-        //  Getting the note that we want to edit and open the edit note activity with that notes.
         Intent intent = new Intent(getApplicationContext(), EditNoteActivity.class);
         intent.putExtra("note", note);
         intent.putExtra("position",position);
         startActivity(intent);
     }
 
+    //  Showing Delete note dialog, and delete and save note.
     private void showDeleteAlertDialog(final int position) {
         new AlertDialog.Builder(MainActivity.this)
                 .setIcon(android.R.drawable.ic_delete)
@@ -133,12 +124,15 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         //  Removing the following item from notesArrayList.
                         notesArrayList.remove(position);
+                        populateNotesArrayListLimited();
 
                         //  Saving the changes.
-                        saveNewNote();
+                        try {
+                            sharedPreferences.edit().putString("notes", ObjectSerializer.serialize(notesArrayList)).apply();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                        //  Updating the UI
-                        notesArrayAdapter.notifyDataSetChanged();
                         //  Notify the User
                         Toast.makeText(MainActivity.this, "Note Deleted", Toast.LENGTH_SHORT).show();
                     }
@@ -147,5 +141,19 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    //  Adding items to notesArrayListLimited to be shown in the list view.
+    public static void populateNotesArrayListLimited() {
+        //  This method is created so that if a note is more than 30 characters, it limits the number of characters that is shown in the list view.
+        notesArrayListLimited.clear();
+        for(int i=0;i<notesArrayList.size();i++){
+            if(notesArrayList.get(i).length()>30){
+                String limitedNote=notesArrayList.get(i).substring(0,30)+" . . .";
+                notesArrayListLimited.add(limitedNote);
+            }else{
+                notesArrayListLimited.add(notesArrayList.get(i));
+            }
+        }
+        notesArrayAdapter.notifyDataSetChanged();
+    }
 
 }

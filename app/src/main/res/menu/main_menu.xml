@@ -4,5 +4,6 @@
 
     <item
         android:id="@+id/btnAddNote"
-        android:title="Add New Note" />
+        android:title="Add New Note"
+        app:showAsAction="always" />
 </menu>

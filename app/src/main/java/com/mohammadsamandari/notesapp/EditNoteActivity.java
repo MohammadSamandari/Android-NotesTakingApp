@@ -37,10 +37,10 @@ public class EditNoteActivity extends AppCompatActivity {
         txtNote.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                SharedPreferences sharedPreferences=getSharedPreferences("com.mohammadsamandari.notesapp", Context.MODE_PRIVATE);
                 MainActivity.notesArrayList.set(position,txtNote.getText().toString());
-                MainActivity.notesArrayAdapter.notifyDataSetChanged();
+                MainActivity.populateNotesArrayListLimited();
                 try {
+                    SharedPreferences sharedPreferences=getSharedPreferences("com.mohammadsamandari.notesapp", Context.MODE_PRIVATE);
                     sharedPreferences.edit().putString("notes", ObjectSerializer.serialize(MainActivity.notesArrayList)).apply();
                 } catch (IOException e) {
                     e.printStackTrace();
